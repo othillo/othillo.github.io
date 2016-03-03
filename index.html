@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Home &mdash; othillo.github.io &mdash; </title>
+        <meta charset="utf-8">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <meta name="robots" content="noindex, follow">
+                <link href="/components/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="/components/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css" />
+        <link href="/css/style.css" rel="stylesheet" type="text/css" />
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <link rel="apple-touch-startup-image" href="/images/jackson/2048x2048.png">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="shortcut icon" sizes="76x76" href="/images/jackson/76x76.png">
+        <link rel="shortcut icon" sizes="120x120" href="/images/jackson/120x120.png">
+        <link rel="shortcut icon" sizes="128x128" href="/images/jackson/128x128.png">
+        <link rel="shortcut icon" sizes="152x152" href="/images/jackson/152x152.png">
+        <link rel="shortcut icon" sizes="196x196" href="/images/jackson/196x196.png">
+        <link rel="shortcut icon" sizes="512x512" href="/images/jackson/512x512.png">
+        <link rel="shortcut icon" sizes="1024x1024" href="/images/jackson/1024x1024.png">
+        <link rel="shortcut icon" sizes="2048x2048" href="/images/jackson/2048x2048.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/images/jackson/76x76.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/images/jackson/120x120.png">
+        <link rel="apple-touch-icon" sizes="128x128" href="/images/jackson/128x128.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/images/jackson/152x152.png">
+        <link rel="apple-touch-icon" sizes="196x196" href="/images/jackson/196x196.png">
+        <link rel="apple-touch-icon" sizes="512x512" href="/images/jackson/512x512.png">
+        <link rel="apple-touch-icon" sizes="1024x1024" href="/images/jackson/1024x1024.png">
+        <link rel="apple-touch-icon" sizes="2048x2048" href="/images/jackson/2048x2048.png">
+
+        <link rel="stylesheet" href="/components/highlightjs/styles/github.css" />
+        <link rel="alternate" type="application/atom+xml" href="/atom.xml" title="othillo.github.io activity feed" />
+        <style>
+        /** quick fix because bootstrap <pre> has a background-color. */
+        pre code { background-color: inherit; }
+        </style>
+                                    </head>
+    <body>
+        <header>
+            <div class="navbar navbar-inverse navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </a>
+                        <a class="brand" href="/">othillo.github.io</a>
+                        <div class="nav-collapse collapse">
+                            <ul class="nav">
+                                <!--
+                                <li><a href="/blog">Posts Archive</a></li>
+                                <li><a href="/blog/categories">Categories</a></li>
+                                <li><a href="/blog/tags">Tags</a></li>
+                                <li><a href="/about">About</a></li>
+                                -->
+                            </ul>
+                        </div><!--/.nav-collapse -->
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="mainContent container">
+            <div class="row-fluid">
+                <div class="span8">
+                        <article>
+        <header>
+            <h2><a href="/blog/2016/03/03/3-line-replayer">The 3-line replayer for Broadway</a></h2>
+        </header>
+        <div>
+            <h1>Introduction</h1>
+
+<p>Replaying event streams is something you inevitably run into when using event sourced applications.
+Maybe you want to create a new read model. Maybe you have a bug. Replaying solves this for you.</p>
+
+<p>Check out <a href="http://labs.qandidate.com/blog/2015/07/08/replaying-event-streams-with-broadway/">this excellent post</a> on
+this subject by my former co-workers at <a href="http://qandidate.com/">Qandidate.com</a>.</p>
+
+<h1>Replaying with 3 lines of code</h1>
+
+<p>Replaying is usually a one-off task so why not make it as easy as possible with nothing but standard <a href="https://github.com/qandidate-labs/broadway">Broadway</a> code.
+All you want is to fetch events (based on certain criteria) and pass them to a projector:</p>
+
+<pre><code>$eventStore-&gt;visitEvents(new Criteria(), new CallableEventVisitor(function ($domainMessage) use ($projector) {
+    $projector-&gt;handle($domainMessage);
+}));
+</code></pre>
+
+<p>3 lines of code! Done!</p>
+
+<p>OK, that's cutting corners but you get the idea, right?
+Let me show you the missing lines:</p>
+
+<pre><code>&lt;?php
+
+use Broadway\Domain\DomainMessage;
+use Broadway\EventStore\CallableEventVisitor;
+use Broadway\EventStore\EventStoreInterface;
+use Broadway\EventStore\Management\Criteria;
+use Broadway\EventStore\Management\EventStoreManagementInterface;
+use Broadway\ReadModel\Projector;
+
+class MyEventStore implements EventStoreInterface, EventStoreManagementInterface {
+    // my implementation
+}
+
+class MyProjector extends Projector {
+}
+
+$eventStore = new MyEventStore();
+$projector  = new MyProjector();
+
+$eventStore-&gt;visitEvents(new Criteria(), new CallableEventVisitor(function (DomainMessage $domainMessage) use ($projector) {
+    $projector-&gt;handle($domainMessage);
+}));
+</code></pre>
+
+<p>By default an empty Criteria object will give you all events but you can use it to query
+- specific event types
+- specific aggregate root ids
+- specific aggregate root types</p>
+
+<h1>Next time</h1>
+
+<p>Next time I will discuss a more reusable way of reprojecting and discuss seamless replaying.</p>
+
+        </div>
+                    <p class="tags">
+            Tags:
+                        <a href="/blog/tags/broadway">broadway</a>,                         <a href="/blog/tags/php">php</a>,                         <a href="/blog/tags/replaying">replaying</a>                        </p>
+            </article>
+                </div>
+                <div class="span4 sidebar">
+                    <div class="well">
+                        <h4>othillo.github.io</h4>
+                    </div>
+                    <div class="well sidebar-nav">
+                        <h4>Links</h4>
+                        <ul class="nav">
+                            <li><a href="https://twitter.com/othillo">https://twitter.com/othillo</a></li>
+                            <li><a href="https://github.com/othillo">https://github.com/othillo</a></li>
+                            <li><a href="https://github.com/mainlycode">https://github.com/mainlycode</a></li>
+                            <li><a href="https://www.linkedin.com/in/othillo">https://www.linkedin.com/in/othillo</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="container">
+            &copy; 2016 othillo.github.io
+        </footer>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="/components/jquery/jquery.min.js"><\/script>')</script>
+        <script src="/components/bootstrap/js/bootstrap.min.js"></script>
+                
+                <script src="/components/highlightjs/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+
+                    </body>
+</html>

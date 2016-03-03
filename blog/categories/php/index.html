@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title><![CDATA[othillo.github.io]]></title>
+    <link href="/blog/categories/php" rel="self"/>
+    <link href="/"/>
+    <updated>2016-03-03T13:25:49+00:00</updated>
+    <id>/</id>
+        <generator uri="http://sculpin.io/">Sculpin</generator>
+            <entry>
+            <title type="html"><![CDATA[The 3-line replayer for Broadway]]></title>
+            <link href="/blog/2016/03/03/3-line-replayer"/>
+            <updated>2016-03-03T00:00:00+00:00</updated>
+            <id>/blog/2016/03/03/3-line-replayer</id>
+            <content type="html"><![CDATA[<h1>Introduction</h1>
+
+<p>Replaying event streams is something you inevitably run into when using event sourced applications.
+Maybe you want to create a new read model. Maybe you have a bug. Replaying solves this for you.</p>
+
+<p>Check out <a href="http://labs.qandidate.com/blog/2015/07/08/replaying-event-streams-with-broadway/">this excellent post</a> on
+this subject by my former co-workers at <a href="http://qandidate.com/">Qandidate.com</a>.</p>
+
+<h1>Replaying with 3 lines of code</h1>
+
+<p>Replaying is usually a one-off task so why not make it as easy as possible with nothing but standard <a href="https://github.com/qandidate-labs/broadway">Broadway</a> code.
+All you want is to fetch events (based on certain criteria) and pass them to a projector:</p>
+
+<pre><code>$eventStore-&gt;visitEvents(new Criteria(), new CallableEventVisitor(function ($domainMessage) use ($projector) {
+    $projector-&gt;handle($domainMessage);
+}));
+</code></pre>
+
+<p>3 lines of code! Done!</p>
+
+<p>OK, that's cutting corners but you get the idea, right?
+Let me show you the missing lines:</p>
+
+<pre><code>&lt;?php
+
+use Broadway\Domain\DomainMessage;
+use Broadway\EventStore\CallableEventVisitor;
+use Broadway\EventStore\EventStoreInterface;
+use Broadway\EventStore\Management\Criteria;
+use Broadway\EventStore\Management\EventStoreManagementInterface;
+use Broadway\ReadModel\Projector;
+
+class MyEventStore implements EventStoreInterface, EventStoreManagementInterface {
+    // my implementation
+}
+
+class MyProjector extends Projector {
+}
+
+$eventStore = new MyEventStore();
+$projector  = new MyProjector();
+
+$eventStore-&gt;visitEvents(new Criteria(), new CallableEventVisitor(function (DomainMessage $domainMessage) use ($projector) {
+    $projector-&gt;handle($domainMessage);
+}));
+</code></pre>
+
+<p>By default an empty Criteria object will give you all events but you can use it to query
+- specific event types
+- specific aggregate root ids
+- specific aggregate root types</p>
+
+<h1>Next time</h1>
+
+<p>Next time I will discuss a more reusable way of reprojecting and discuss seamless replaying.</p>
+]]></content>
+        </entry>
+    </feed>
